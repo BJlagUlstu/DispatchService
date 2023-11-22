@@ -1,0 +1,50 @@
+services:
+  web-app:
+    build:
+      dockerfile: ./Dockerfile
+    image: web-app
+    container_name: web-app
+    hostname: web-app
+    environment:
+      DATA_SOURCE: postgres
+      DATA_SOURCE_PASSWORD: 1234
+      DATA_SOURCE_USER: postgres
+      DATA_SOURCE_DB: messenger
+      IMAGE_DIR: /images
+      HOST_NAME: http://localhost:8080
+    ports:
+      - '8080:8080'
+    volumes:
+      - 'images:/images'
+    networks:
+      - postgres
+      - app
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: postgres
+      POSTGRES_DB: messenger
+    volumes:
+      - './src/main/resources/scripts:/docker-entrypoint-initdb.d/'
+      - 'postgres:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+  app:
+    driver: bridge
+
+volumes:
+  postgres:
+  images:
